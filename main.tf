@@ -1,6 +1,7 @@
 /*
 Create SES domain identity and verify it with Route53 DNS records
 */
+data "aws_region" "current" {}
 
 resource "aws_ses_domain_identity" "ses_domain" {
   count = module.this.enabled ? 1 : 0
@@ -96,4 +97,36 @@ resource "aws_iam_user_policy" "sending_emails" {
   name   = module.this.id
   policy = join("", data.aws_iam_policy_document.ses_policy.*.json)
   user   = module.ses_user.user_name
+}
+
+#-----------------------------------------------------------------------------------------------------------------------
+# OPTIONALLY CONFIGURE SES MAIL_FROM DOMAIN
+#-----------------------------------------------------------------------------------------------------------------------
+
+# SES MAIL_FROM Domain
+resource "aws_ses_domain_mail_from" "ses_domain_mail_from" {
+  count            = var.mail_from_enabled ? 1 : 0
+  domain           = aws_ses_domain_identity.ses_domain[count.index].domain
+  mail_from_domain = "${var.mail_from_domain}.${aws_ses_domain_identity.ses_domain[count.index].domain}"
+}
+
+# Route53 TXT record for MAIL_FROM SPF
+resource "aws_route53_record" "ses_domain_mail_from_spf" {
+  count   = var.mail_from_enabled ? 1 : 0
+  zone_id = var.zone_id
+  name    = "${var.mail_from_domain}.${aws_ses_domain_identity.ses_domain[count.index].domain}"
+  type    = "TXT"
+  ttl     = "600"
+  records = ["v=spf1 include:amazonses.com -all"]
+}
+
+# Route53 MX record for MAIL_FROM domain from
+resource "aws_route53_record" "ses_domain_mail_from_mx_from" {
+  count   = var.mail_from_enabled ? 1 : 0
+  zone_id = var.zone_id
+  name    = "${var.mail_from_domain}.${aws_ses_domain_identity.ses_domain[count.index].domain}"
+  type    = "MX"
+  ttl     = "600"
+  records = [format("10 feedback-smtp.%s.amazonses.com", data.aws_region.current.name)]
+  
 }
