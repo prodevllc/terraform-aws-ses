@@ -56,3 +56,16 @@ variable "ses_user_enabled" {
   description = "Creates user with permission to send emails from SES domain"
   default     = true
 }
+
+variable "mail_from_enabled" {
+  type        = bool
+  description = "Sets up a MAIL_FROM domain to be used with SES"
+  default     = false
+}
+
+variable "mail_from_domain" {
+  type        = string
+  description = "Subdomain (of above domain) which is to be used as MAIL FROM address (Required for DMARC validation)"
+  default     = ""
+}
+
