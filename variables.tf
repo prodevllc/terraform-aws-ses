@@ -58,14 +58,14 @@ variable "ses_user_enabled" {
 }
 
 variable "mail_from_enabled" {
-  type = bool
+  type        = bool
   description = "Sets up a MAIL_FROM domain to be used with SES"
-  default = false
+  default     = false
 }
 
 variable "mail_from_domain" {
-  type = string
+  type        = string
   description = "Subdomain (of above domain) which is to be used as MAIL FROM address (Required for DMARC validation)"
-  default = ""
+  default     = ""
 }
 

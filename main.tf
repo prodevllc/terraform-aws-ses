@@ -92,7 +92,7 @@ module "ses_user" {
 
 resource "aws_iam_user_policy" "sending_emails" {
   #bridgecrew:skip=BC_AWS_IAM_16:Skipping `Ensure IAM policies are attached only to groups or roles` check because this module intentionally attaches IAM policy directly to a user.
-  count = local.create_user_enabled && ! local.create_group_enabled ? 1 : 0
+  count = local.create_user_enabled && !local.create_group_enabled ? 1 : 0
 
   name   = module.this.id
   policy = join("", data.aws_iam_policy_document.ses_policy.*.json)
@@ -128,5 +128,5 @@ resource "aws_route53_record" "ses_domain_mail_from_mx_from" {
   type    = "MX"
   ttl     = "600"
   records = [format("10 feedback-smtp.%s.amazonses.com", data.aws_region.current.name)]
-  
+
 }
